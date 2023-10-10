@@ -61,6 +61,7 @@ async def help(message: types.Message):
 
     if message.from_user.id == menemi:
         answer += "\n".join(menemi_com)
+        answer += "\n"
 
     await bot.send_message(message.chat.id, answer, parse_mode="HTML")
 
@@ -105,7 +106,7 @@ async def select_queue(message: types.Message):
         "SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'users' AND name NOT LIKE 'groups';").fetchall()
     is_queue_list_empty = True
     for table in tables_list:
-        if message.from_user.id == menemi or table[0].__contains__(user[2]):
+        if message.from_user.id == menemi or table[0].__contains__(user[3]):
             is_queue_list_empty = False
             buttons.append(types.InlineKeyboardButton(text=f"{table[0]}", callback_data=f"{table[0]}_select_queue"))
 
