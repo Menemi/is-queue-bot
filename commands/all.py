@@ -178,6 +178,9 @@ async def list(message: types.Message):
             if len(users) == 0:
                 await message.answer("Очередь пуста")
                 return
+
+            last_id = cursor.execute(f"SELECT id FROM {current_queue_name} WHERE user_id != '-'").fetchall()[-1][0]
+            users = cursor.execute(f"SELECT * FROM {current_queue_name} WHERE id < {last_id + 1}")
             position = 1
             answer = f"{current_queue_name}:\n"
             for i in users:
