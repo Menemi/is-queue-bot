@@ -128,7 +128,7 @@ async def select_queue(message: types.Message):
 
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(*buttons)
-    await bot.send_message(message.from_user.id, "Выбери очередь", reply_markup=keyboard)
+    await bot.send_message(message.from_user.id, "Выбери очередь или напиши @Menemi, если тут нет твоей группы", reply_markup=keyboard)
     return
 
 
