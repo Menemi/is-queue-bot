@@ -100,6 +100,10 @@ async def select_queue(message: types.Message):
 
     user = get_user(message.from_user.id)[0]
 
+    if user[3] != "XYYZ":
+        await message.answer(f"Твоя актуальная группа: <code>{user[3]}</code>\nЧтобы её поменять, обратись к @Menemi", parse_mode="HTML")
+        return
+
     buttons = []
 
     tables_list = cursor.execute(
@@ -134,7 +138,8 @@ async def queue(message: types.Message):
                 places = cursor.execute(f"SELECT id FROM {current_queue_name} WHERE user_id = '-'").fetchall()
                 buttons = []
                 for place in places:
-                    buttons.append(types.InlineKeyboardButton(text=f"{place[0]}", callback_data=f"{place[0]}_{current_queue_name}_select_place"))
+                    buttons.append(types.InlineKeyboardButton(text=f"{place[0]}",
+                                                              callback_data=f"{place[0]}_{current_queue_name}_select_place"))
 
                 keyboard = types.InlineKeyboardMarkup(row_width=5)
                 keyboard.add(*buttons)
@@ -184,7 +189,8 @@ async def quit(message: types.Message):
                 f"SELECT * FROM {current_queue_name} WHERE user_id = '{message.from_user.id}'").fetchall()
             is_user_here = len(users)
             if is_user_here == 1:
-                cursor.execute(f"UPDATE {current_queue_name} SET user_id = '-', username = '-' WHERE id = {int(users[0][0])}")
+                cursor.execute(
+                    f"UPDATE {current_queue_name} SET user_id = '-', username = '-' WHERE id = {int(users[0][0])}")
                 connection.commit()
                 await message.answer("Ты вышел(-ла) из очереди, чтобы заново в неё встать, напиши команду: /queue")
             else:
