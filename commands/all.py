@@ -63,7 +63,12 @@ async def help(message: types.Message):
         answer += "\n".join(menemi_com)
         answer += "\n"
 
-    await bot.send_message(message.chat.id, answer, parse_mode="HTML")
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    for command in all_com:
+        button = types.InlineKeyboardButton(f"{command.split(' ')[0]}")
+        markup.add(button)
+
+    await bot.send_message(message.chat.id, answer, reply_markup=markup, parse_mode="HTML")
 
 
 # TODO: info
