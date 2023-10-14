@@ -33,7 +33,7 @@ def register(message):
             user_count = len(cursor.fetchall())
             if user_count == 0:
                 cursor.execute(
-                    f"UPDATE users SET username = '{message.from_user.username}' WHERE user_id = {message.from_user.id};")
+                    f"UPDATE users SET username = '{message.from_user.username.lower()}' WHERE user_id = {message.from_user.id};")
                 connection.commit()
             return
     except Exception:
