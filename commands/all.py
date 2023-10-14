@@ -83,6 +83,13 @@ async def set_group(message: types.Message):
     connection = sqlite3.connect(path_to_db)
     cursor = connection.cursor()
 
+    user = get_user(message.from_user.id)[0]
+
+    if user[3] != "XYYZ":
+        await message.answer(f"Твоя актуальная группа: <code>{user[3]}</code>\nЧтобы её поменять, обратись к @Menemi",
+                             parse_mode="HTML")
+        return
+
     buttons = []
     groups = cursor.execute("SELECT name FROM groups").fetchall()
     for group in groups:
@@ -99,10 +106,6 @@ async def select_queue(message: types.Message):
     cursor = connection.cursor()
 
     user = get_user(message.from_user.id)[0]
-
-    if user[3] != "XYYZ":
-        await message.answer(f"Твоя актуальная группа: <code>{user[3]}</code>\nЧтобы её поменять, обратись к @Menemi", parse_mode="HTML")
-        return
 
     buttons = []
 
@@ -125,32 +128,37 @@ async def select_queue(message: types.Message):
 
 
 # TODO: queue
-async def queue(message: types.Message):
+async def queue(message: types.Message = None, user_id=None):
     connection = sqlite3.connect(path_to_db)
     cursor = connection.cursor()
-    current_queue_name = get_user(message.from_user.id)[0][4]
+
+    if message is not None:
+        user_id = message.from_user.id
+
+    current_queue_name = get_user(user_id)[0][4]
+
     if current_queue_name != "temp":
         try:
             users = cursor.execute(
-                f"SELECT * FROM {current_queue_name} WHERE user_id = '{message.from_user.id}'").fetchall()
+                f"SELECT * FROM {current_queue_name} WHERE user_id = '{user_id}'").fetchall()
             is_user_here = len(users)
-            if is_user_here == 0:
-                places = cursor.execute(f"SELECT id FROM {current_queue_name} WHERE user_id = '-'").fetchall()
-                buttons = []
-                for place in places:
-                    buttons.append(types.InlineKeyboardButton(text=f"{place[0]}",
-                                                              callback_data=f"{place[0]}_{current_queue_name}_select_place"))
+            text = "Выбери очередь"
+            if is_user_here != 0:
+                text = f"В этой очереди у тебя уже есть номер [<code>{get_user_position(user_id)}</code>], хочешь выбрать другой?"
 
-                keyboard = types.InlineKeyboardMarkup(row_width=5)
-                keyboard.add(*buttons)
-                await bot.send_message(message.from_user.id, "Выбери очередь", reply_markup=keyboard)
-            else:
-                await message.answer(
-                    f"Ты уже есть в очереди\nТвой номер в ней: {get_user_position(message.from_user.id)}")
+            places = cursor.execute(f"SELECT id FROM {current_queue_name} WHERE user_id = '-'").fetchall()
+            buttons = []
+            for place in places:
+                buttons.append(types.InlineKeyboardButton(text=f"{place[0]}",
+                                                          callback_data=f"{place[0]}_{current_queue_name}_select_place"))
+
+            keyboard = types.InlineKeyboardMarkup(row_width=5)
+            keyboard.add(*buttons)
+            await bot.send_message(user_id, text, reply_markup=keyboard, parse_mode="HTML")
         except sqlite3.IntegrityError:
-            await message.answer("!ERROR!")
+            await bot.send_message(user_id, "!ERROR!")
     else:
-        await message.answer("Чтобы встать в очередь нужно сначала её выбрать: /selectqueue")
+        await bot.send_message(user_id, "Чтобы встать в очередь нужно сначала её выбрать: /selectqueue")
 
 
 # TODO: list

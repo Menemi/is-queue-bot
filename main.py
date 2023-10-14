@@ -10,7 +10,7 @@ from aiogram.dispatcher.filters import Text
 from commands.all import check_users_group, new_queue, info, set_group, queue, list, select_queue, quit, help
 from commands.chief import drop_queue, reset
 from commands.menemi import update_chief_status, add_group, remove_group
-from config import token, path_to_db
+from config import token, path_to_db, menemi
 
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=token)
@@ -192,6 +192,7 @@ async def callbacks_select_place(call: types.CallbackQuery):
 
     await call.message.edit_text(f"Ты выбрал очередь: <code>{data}</code>", parse_mode="HTML")
     await call.answer()
+    await queue(user_id=user_id)
 
 
 @dp.callback_query_handler(Text(endswith="_drop_queue"))
@@ -238,6 +239,12 @@ async def callbacks_select_place(call: types.CallbackQuery):
 
     connection = sqlite3.connect(path_to_db)
     cursor = connection.cursor()
+
+    ids = cursor.execute(f"SELECT id FROM {queue_name} WHERE user_id = '{user_id}'").fetchall()
+
+    for id in ids:
+        cursor.execute(f"UPDATE {queue_name} SET user_id = '-', username = '-' WHERE id = {id[0]}")
+
     cursor.execute(f"UPDATE {queue_name} SET user_id = '{user_id}', username = '{username}' WHERE id = {int(place)}")
     connection.commit()
 
